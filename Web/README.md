@@ -1,6 +1,6 @@
-# Ecomers Web
+# Resumenes.net Web
 
-Aplicación web de e-commerce desarrollada con React y TypeScript.
+Aplicación web de resúmenes de estudio desarrollada con React y TypeScript.
 
 ## Tecnologías
 

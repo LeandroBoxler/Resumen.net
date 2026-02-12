@@ -1,6 +1,6 @@
-# Ecomers App
+# Resumenes.net App
 
-Aplicación móvil de e-commerce desarrollada con Flutter.
+Aplicación móvil de resúmenes de estudio desarrollada con Flutter.
 
 ## Requisitos
 

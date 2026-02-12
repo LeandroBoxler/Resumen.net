@@ -1,5 +1,5 @@
-name: ecomers_app
-description: Aplicación móvil de e-commerce
+name: resumenes_app
+description: Aplicación móvil de resúmenes de estudio
 publish_to: 'none'
 
 version: 1.0.0+1

@@ -1,6 +1,6 @@
-# Ecomers - E-commerce Multi-plataforma
+# Resumenes.net - Plataforma de Resúmenes de Estudio
 
-Proyecto de e-commerce con arquitectura multi-plataforma.
+Plataforma educativa para compartir y gestionar resúmenes de estudio con arquitectura multi-plataforma.
 
 ## Estructura del Proyecto
 
@@ -69,7 +69,7 @@ flutter run
 Actualiza la cadena de conexión en `Api/appsettings.json`:
 ```json
 "ConnectionStrings": {
-  "DefaultConnection": "Host=localhost;Database=ecomers_db;Username=usuario;Password=contraseña"
+  "DefaultConnection": "Host=localhost;Database=resumenes_db;Username=usuario;Password=contraseña"
 }
 ```
 
