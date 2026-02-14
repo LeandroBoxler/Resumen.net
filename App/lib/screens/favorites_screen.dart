@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:resumenes_app/Services/api_services.dart';
 import 'package:resumenes_app/models/StudyNote.dart';
 import "package:resumenes_app/screens/create_screen.dart";
-import 'package:resumenes_app/screens/detail_screen.dart';
 import 'package:resumenes_app/screens/view_screen.dart';
 import 'package:resumenes_app/screens/register_screen.dart';
 
@@ -67,13 +66,9 @@ class HomeScreen extends StatelessWidget {
                             onPressed: () async {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => DetailScreen(id: studyNote.id!),
+                                MaterialPageRoute(    builder: (context) => ViewScreen(id: studyNote.id!),
 ),
-
-
-
                                 );
-                                
                             
                             },
                           ),
