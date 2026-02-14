@@ -5,6 +5,7 @@ using domain.UseCase;
 using System.Threading.Tasks;
 using domain.Types;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Controllers;
 
@@ -12,9 +13,9 @@ namespace Api.Controllers;
 [Route("api/notes")]
 public class StudyNotesController : ControllerBase
 {
-    private readonly StudyNotesServices<StudyNote> _service;
+    private readonly IService<StudyNote> _service;
     
-    public StudyNotesController(StudyNotesServices<StudyNote> service)
+    public StudyNotesController(IService<StudyNote> service)
     {
         _service = service;
     }
@@ -40,37 +41,47 @@ public class StudyNotesController : ControllerBase
     OperationResult<StudyNote> result = await useCase.Execute(id);
     if (!result.IsSuccess)
     {
-        return NotFound(result.Error);
+        return NotFound(new {message=result.Error!.Message});
     }
     return Ok( result.Value );
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateStudyNote([FromBody] StudyNote studyNote)
     {
+        Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
+        if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
+
         CreateStudyNote useCase = new CreateStudyNote(_service);
-        OperationResult result = await useCase.Execute(studyNote);
-        if (!result.IsSuccess) return BadRequest(result.Error);
+        OperationResult result = await useCase.Execute(studyNote, userId);
+        if (!result.IsSuccess) return BadRequest(new {message=result.Error!.Message});
         
         return Ok();
     }
-     [HttpDelete("{id}")]
+
+    [HttpDelete("{id}")]
+    [Authorize]
     public IActionResult DeleteStudyNote(Guid id)
     {
+        Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
+        if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
         DeleteStudyNote useCase = new DeleteStudyNote(_service);
-        OperationResult result = useCase.Execute(id).Result;
-        if (!result.IsSuccess) return BadRequest(result.Error);
+        OperationResult result = useCase.Execute(id, userId).Result;
+        if (!result.IsSuccess) return BadRequest(new {message=result.Error!.Message});
         
         return Ok();
     }
+
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateStudyNote(Guid id, [FromBody] StudyNote studyNote)
     {
+        Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
+        if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
         UpdateStudyNote useCase = new UpdateStudyNote(_service);
-        OperationResult<StudyNote> result = await useCase.Execute(studyNote);
-        if (!result.IsSuccess) return BadRequest( result.Error );
-        
-            
+        OperationResult<StudyNote> result = await useCase.Execute(studyNote, userId);
+        if (!result.IsSuccess) return BadRequest( new {message=result.Error!.Message} );
         
         return Ok(result.Value);
     }

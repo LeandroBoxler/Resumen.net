@@ -7,18 +7,18 @@ using System.Linq.Expressions;
 
 namespace Api.Services;
 
-public class PostgreStudyNotesService : IService<StudyNote>
+public class PostgreUsersService : IService<User>
 {
     private readonly AppDbContext _ctx;
-    public PostgreStudyNotesService(AppDbContext ctx)
+    public PostgreUsersService(AppDbContext ctx)
     {
         _ctx = ctx;        
     }
     
-    public async Task<OperationResult> Create(StudyNote create)
+    public async Task<OperationResult> Create(User create)
     {
         try {
-            await _ctx.StudyNotes.AddAsync(create);
+            await _ctx.Users.AddAsync(create);
             await _ctx.SaveChangesAsync();
             return new OperationResult();
         }
@@ -31,7 +31,7 @@ public class PostgreStudyNotesService : IService<StudyNote>
     public async Task<OperationResult> Delete(Guid id)
     {
         try {
-        var entity = await _ctx.StudyNotes.FindAsync(id);
+        var entity = await _ctx.Users.FindAsync(id);
             if (entity == null) return new OperationResult(new Exception("Not found"));
         _ctx.Remove(entity);
         await _ctx.SaveChangesAsync();
@@ -44,101 +44,102 @@ public class PostgreStudyNotesService : IService<StudyNote>
         }
     }
 
-    public async Task<OperationResult<StudyNote[]>> GetAll()
+    public async Task<OperationResult<User[]>> GetAll()
     {
         try {
-        var items = await _ctx.StudyNotes.ToArrayAsync();
+        var items = await _ctx.Users.ToArrayAsync();
         
-        return new OperationResult<StudyNote[]>(items);
+        return new OperationResult<User[]>(items);
 
         }
         catch (Exception ex)
         {
-            return new OperationResult<StudyNote[]>(ex);
+            return new OperationResult<User[]>(ex);
         }
     }
 
-    public async Task<OperationResult<StudyNote>> GetById(Guid id)
+    public async Task<OperationResult<User>> GetById(Guid id)
     {
-        var item = await _ctx.StudyNotes.FindAsync(id);
-            if (item == null) return new OperationResult<StudyNote>(new Exception("Not found"));
-            return new OperationResult<StudyNote>(item);
+        var item = await _ctx.Users.FindAsync(id);
+            if (item == null) return new OperationResult<User>(new Exception("Not found"));
+            return new OperationResult<User>(item);
     }
 
-    public async Task<OperationResult> Update(StudyNote update)
+    public async Task<OperationResult> Update(User update)
     {
         try
         {
-            var existing = await _ctx.StudyNotes.FindAsync(update.Id);
-        if (existing == null) return new OperationResult(new Exception("Not found"));
-        existing.Name = update.Name;
-        _ctx.StudyNotes.Update(existing);
-        await _ctx.SaveChangesAsync();
-        return new OperationResult();
-        }catch (Exception e)
+            var existing = await _ctx.Users.FindAsync(update.Id);
+            if (existing == null) return new OperationResult(new Exception("Not found"));
+            existing.FirstName = update.FirstName;
+            existing.LastName = update.LastName;
+            _ctx.Users.Update(existing);
+            await _ctx.SaveChangesAsync();
+            return new OperationResult();
+        } catch (Exception e)
         {
             return new OperationResult(e);
         }
     }
 
-    public async Task<OperationResult<StudyNote[]>> GetMany(Query<StudyNote> query)
+    public async Task<OperationResult<User[]>> GetMany(Query<User> query)
     {
         try
         {
-            IQueryable<StudyNote> studyNotes = _ctx.StudyNotes.AsQueryable();
-    
+            IQueryable<User> users = _ctx.Users.AsQueryable();
+
             if (query.Filters != null)
             {
-                studyNotes = ApplyFilter(studyNotes, query.Filters);
+                users = ApplyFilter(users, query.Filters);
             }
-    
+
             if (query.Offset.HasValue)
-                studyNotes = studyNotes.Skip(query.Offset.Value);
-    
+                users = users.Skip(query.Offset.Value);
+
             if (query.Limit.HasValue)
-                studyNotes = studyNotes.Take(query.Limit.Value);
-    
-            var result = await studyNotes.ToArrayAsync();
-            return new OperationResult<StudyNote[]>(result);
+                users = users.Take(query.Limit.Value);
+
+            var result = await users.ToArrayAsync();
+            return new OperationResult<User[]>(result);
         }
         catch (Exception ex)
         {
-            return new OperationResult<StudyNote[]>(ex);
+            return new OperationResult<User[]>(ex);
         }
     }
-    
-    public async Task<OperationResult<StudyNote>> GetOne(Query<StudyNote> query)
+
+    public async Task<OperationResult<User>> GetOne(Query<User> query)
     {
         try
         {
-            IQueryable<StudyNote> studyNotes = _ctx.StudyNotes.AsQueryable();
-    
+            IQueryable<User> users = _ctx.Users.AsQueryable();
+
             if (query.Filters != null)
             {
-                studyNotes = ApplyFilter(studyNotes, query.Filters);
+                users = ApplyFilter(users, query.Filters);
             }
-    
-            var user = await studyNotes.FirstOrDefaultAsync();
+
+            var user = await users.FirstOrDefaultAsync();
             if (user == null)
-                return new OperationResult<StudyNote>(new Exception("Not found"));
-    
-            return new OperationResult<StudyNote>(user);
+                return new OperationResult<User>(new Exception("Not found"));
+
+            return new OperationResult<User>(user);
         }
         catch (Exception ex)
         {
-            return new OperationResult<StudyNote>(ex);
+            return new OperationResult<User>(ex);
         }
     }
-    
+
     // Aplica los filtros recursivamente
-    private IQueryable<StudyNote> ApplyFilter(IQueryable<StudyNote> query, IFilter<StudyNote> filter)
+    private IQueryable<User> ApplyFilter(IQueryable<User> query, IFilter<User> filter)
     {
-        if (filter is BaseFilter<StudyNote> baseFilter)
+        if (filter is BaseFilter<User> baseFilter)
         {
-            var param = Expression.Parameter(typeof(StudyNote), "x");
+            var param = Expression.Parameter(typeof(User), "x");
             var member = Expression.PropertyOrField(param, baseFilter.Field);
             var constant = Expression.Constant(Convert.ChangeType(baseFilter.Value, member.Type));
-    
+
             Expression body = baseFilter.Operator switch
             {
                 FilterOperator.Eq => Expression.Equal(member, constant),
@@ -151,11 +152,11 @@ public class PostgreStudyNotesService : IService<StudyNote>
                 FilterOperator.In => Expression.Call(Expression.Constant(baseFilter.Value), typeof(List<>).MakeGenericType(member.Type).GetMethod("Contains")!, member),
                 _ => throw new NotImplementedException()
             };
-    
-            var lambda = Expression.Lambda<Func<StudyNote, bool>>(body, param);
+
+            var lambda = Expression.Lambda<Func<User, bool>>(body, param);
             return query.Where(lambda);
         }
-        else if (filter is AndFilter<StudyNote> andFilter)
+        else if (filter is AndFilter<User> andFilter)
         {
             foreach (var subFilter in andFilter.Value)
             {
@@ -163,24 +164,24 @@ public class PostgreStudyNotesService : IService<StudyNote>
             }
             return query;
         }
-        else if (filter is OrFilter<StudyNote> orFilter)
+        else if (filter is OrFilter<User> orFilter)
         {
-            var param = Expression.Parameter(typeof(StudyNote), "x");
+            var param = Expression.Parameter(typeof(User), "x");
             Expression? body = null;
-    
+
             foreach (var subFilter in orFilter.Value)
             {
-                var subQuery = ApplyFilter(_ctx.StudyNotes.AsQueryable(), subFilter);
-                var subExpr = ((Expression<Func<StudyNote, bool>>)subQuery.Expression).Body;
-    
+                var subQuery = ApplyFilter(_ctx.Users.AsQueryable(), subFilter);
+                var subExpr = ((Expression<Func<User, bool>>)subQuery.Expression).Body;
+
                 body = body == null ? subExpr : Expression.OrElse(body, subExpr);
             }
-    
+
             if (body == null) return query;
-            var lambda = Expression.Lambda<Func<StudyNote, bool>>(body, param);
+            var lambda = Expression.Lambda<Func<User, bool>>(body, param);
             return query.Where(lambda);
         }
-    
+
         return query;
     }
 }
