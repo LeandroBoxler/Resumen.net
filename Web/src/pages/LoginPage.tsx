@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { Input, Button, ErrorMessage } from '../components/common';
+import { authService } from '../services/api';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -20,9 +21,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const isLogged = await authService.login(formData)
       
+      if (!isLogged) throw new Error('Login failed');
       navigate(ROUTES.HOME);
     } catch (err) {
       setError('Credenciales inválidas. Por favor, intenta nuevamente.');

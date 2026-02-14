@@ -1,7 +1,9 @@
 import axios from 'axios';
-import { StudyNote } from '../types';
+import { LoginRequest, RegisterRequest, StudyNote } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+const TOKEN_KEY = "token"
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -9,6 +11,30 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY); // O donde guardes el JWT
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const authService = {
+  login: async (credentials: LoginRequest): Promise<boolean> => {
+    const response = await apiClient.post<string>('/api/auth/login', credentials);
+    if (response.status !== 200) {
+      return false
+    }
+    localStorage.setItem(TOKEN_KEY, response.data);
+    return true
+  },
+  register: async (credentials: RegisterRequest): Promise<boolean> => {
+    const response = await apiClient.post<StudyNote>('/api/auth/register', credentials);
+    return response.status === 200;
+  },
+}
 
 export const studyNoteService = {
   getAll: async (): Promise<StudyNote[]> => {

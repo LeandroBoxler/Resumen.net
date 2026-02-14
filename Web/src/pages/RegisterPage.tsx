@@ -2,11 +2,13 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { Input, Button, ErrorMessage } from '../components/common';
+import { authService } from '../services/api';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -35,10 +37,10 @@ export default function RegisterPage() {
       // Aquí integrarías con tu API de registro
       // const response = await authService.register(formData);
       
-      // Simulación de registro
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const registered = await authService.register(formData)
       
       // Redirigir después del registro exitoso
+      if (!registered) throw new Error('Login failed');
       navigate(ROUTES.LOGIN);
     } catch (err) {
       setError('Error al crear la cuenta. Por favor, intenta nuevamente.');
@@ -67,14 +69,24 @@ export default function RegisterPage() {
           {error && <ErrorMessage message={error} />}
 
           <Input
-            label="Nombre Completo"
+            label="Nombre"
             type="text"
-            name="name"
-            value={formData.name}
+            name="firstName"
+            value={formData.firstName}
             onChange={handleChange}
-            placeholder="Juan Pérez"
+            placeholder="Juan"
             required
-            autoComplete="name"
+            autoComplete="firstName"
+          />
+          <Input
+            label="Apellido"
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            placeholder="Pérez"
+            required
+            autoComplete="lastName"
           />
 
           <Input
