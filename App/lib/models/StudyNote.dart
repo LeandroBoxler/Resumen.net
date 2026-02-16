@@ -7,16 +7,40 @@ class StudyNote {
   @JsonKey(includeIfNull: false)
   final String? id;
   final String name;
+  final String? description;
+  final String? pdfLink;
 
   StudyNote({
     this.id,
     required this.name,
+    this.description,
+    this.pdfLink,
   });
 
   factory StudyNote.fromJson(Map<String, dynamic> json) => 
       _$StudyNoteFromJson(json);
 
   Map<String, dynamic> toJson() => _$StudyNoteToJson(this);
+}
+
+@JsonSerializable()
+class UserFavorite {
+  final String userId;
+  final String noteId;
+  
+  @JsonKey(includeIfNull: false)
+  final StudyNote? studyNote;
+
+  UserFavorite({
+    required this.userId,
+    required this.noteId,
+    this.studyNote,
+  });
+
+  factory UserFavorite.fromJson(Map<String, dynamic> json) => 
+      _$UserFavoriteFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UserFavoriteToJson(this);
 }
 
 @JsonSerializable()

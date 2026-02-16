@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:resumenes_app/Services/api_services.dart';
+import 'package:resumenes_app/services/api_service.dart';
 import 'package:resumenes_app/models/StudyNote.dart';
 
 

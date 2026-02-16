@@ -1,42 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:resumenes_app/Services/api_services.dart';
+import 'package:resumenes_app/services/favorites_service.dart';
+import 'package:resumenes_app/services/api_service.dart';
 import 'package:resumenes_app/models/StudyNote.dart';
-import "package:resumenes_app/screens/create_screen.dart";
-import 'package:resumenes_app/screens/view_screen.dart';
-import 'package:resumenes_app/screens/register_screen.dart';
+import 'package:resumenes_app/screens/detail_screen.dart';
 
-class HomeScreen extends StatelessWidget {
-  final ApiService apiService = ApiService();
 
-  HomeScreen({super.key});
+class FavoritesScreen extends StatefulWidget {
+  const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  final FavoritesService favoritesService = FavoritesService();
+  late Future<List<UserFavorite>> _favoritesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  void _loadFavorites() {
+    _favoritesFuture = favoritesService.getUserFavorites();
+  }
+
+  Future<void> _removeFavorite(String noteId) async {
+    try {
+      await favoritesService.removeFavorite(noteId);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Eliminado de favoritos')),
+        );
+        setState(() {
+          _loadFavorites();
+        });
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al eliminar: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-   appBar: AppBar(
-  automaticallyImplyLeading: true,
-  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-  title: const Text('Resumenes.net'),
-),
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Mis Favoritos'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             const Text(
-              'Bienvenido a Resumenes.net',
+              'Mis Resúmenes Favoritos',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: FutureBuilder<List<StudyNote>>(
-                future: apiService.getStudyNotes(),
+              child: FutureBuilder<List<UserFavorite>>(
+                future: _favoritesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  
+
                   if (snapshot.hasError) {
                     return Center(
                       child: Text(
@@ -45,59 +80,71 @@ class HomeScreen extends StatelessWidget {
                       ),
                     );
                   }
-                  
+
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Center(
-                      child: Text('No hay resúmenes disponibles'),
+                      child: Text('No tienes favoritos aún'),
                     );
                   }
-                  
-                  final studyNotes = snapshot.data!;
+
+                  final favorites = snapshot.data!;
                   return ListView.builder(
-                    itemCount: studyNotes.length,
+                    itemCount: favorites.length,
                     itemBuilder: (context, index) {
-                      final studyNote = studyNotes[index];
+                      final favorite = favorites[index];
+                      final studyNote = favorite.studyNote;
+
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
-                          title: Text(studyNote.name),
+                          title: Text(studyNote?.name ?? 'Sin nombre'),
                           trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () async {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(    builder: (context) => ViewScreen(id: studyNote.id!),
-),
-                                );
-                            
+                            icon: const Icon(Icons.favorite, color: Colors.red),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Eliminar de favoritos'),
+                                    content: const Text(
+                                        '¿Deseas eliminar este resumen de tus favoritos?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Cancelar'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          _removeFavorite(favorite.noteId);
+                                        },
+                                        child: const Text('Eliminar'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
                           ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailScreen(
+                                  id: favorite.noteId,
+                                  isEditable: false,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       );
                     },
                   );
                 },
               ),
-            ),
-          
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CreateScreen()),
-                );
-              },
-              child: const Text('Agregar Nota de Estudio'),
-            ),
-             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterScreen()),
-                );
-              },
-              child: const Text('Registrarse'),
             ),
           ],
         ),

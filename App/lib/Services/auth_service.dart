@@ -11,10 +11,10 @@ class AuthService {
     receiveTimeout: const Duration(seconds: 3),
   ));
 
-  Future<Auth> authLogin(String email, String password) async {
+  Future<String> authLogin(String email, String password) async {
     try {
       final response = await _dio.post('/auth/login', data: {'email': email, 'password': password});
-      return Auth.fromJson(response.data);
+      return response.data as String;
     } catch (e) {
       throw Exception('Error al iniciar sesión: $e');
     }

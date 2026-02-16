@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:resumenes_app/Services/api_services.dart';
-import 'package:resumenes_app/models/StudyNote.dart';
+import 'package:provider/provider.dart';
+import 'package:resumenes_app/providers/auth_provider.dart';
+import 'package:resumenes_app/services/auth_service.dart';
 import 'package:resumenes_app/screens/home_screen.dart';
+import 'package:resumenes_app/screens/register_screen.dart';
 
-
-
-
-class CreateScreen extends StatefulWidget {
-  const CreateScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<CreateScreen> createState() => _CreateScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _CreateScreenState extends State<CreateScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String nombre = "";
-  final ApiService apiService = ApiService();
-
+  String email = "";
+  String password = "";
+  final AuthService authService = AuthService();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,57 +31,93 @@ class _CreateScreenState extends State<CreateScreen> {
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               const Text(
-                'Crear Nuevo Resumen',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                'Iniciar Sesión',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               TextFormField(
                 decoration: const InputDecoration(
-                  labelText: 'Nombre del Resumen',
+                  labelText: 'Correo Electrónico',
                   border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.emailAddress,
                 onSaved: (value) {
-                  nombre = value!;
+                  email = value!;
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingresa un nombre';
+                    return 'Por favor ingresa tu correo';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-
-                    final note = StudyNote(name: nombre);
- Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                );  
-                    try {
-                      await apiService.createStudyNote(note);
-
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Resumen creado exitosamente')),
-                        );
-                        Navigator.pop(context);
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $e')),
-                        );
-                      }
-                    }
-                  }
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Contraseña',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+                onSaved: (value) {
+                  password = value!;
                 },
-                child: const Text('Crear Resumen'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor ingresa tu contraseña';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          try {
+                            final token = await authService.authLogin(email, password);
+                            
+                            final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                            await authProvider.login(token);
+
+                            if (context.mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                              );
+                            }
+                          } catch (e) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error: $e')),
+                              );
+                            }
+                          }
+                        }
+                      },
+                      child: const Text('Iniciar Sesión'),
+                    ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                  );
+                },
+                child: const Text('¿No tienes cuenta? Regístrate'),
               ),
             ],
           ),
