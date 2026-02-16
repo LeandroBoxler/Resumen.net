@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { LoginRequest, RegisterRequest, StudyNote } from '../types';
+import { LoginRequest, RegisterRequest, SecureUser, StudyNote } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -13,7 +13,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY); // O donde guardes el JWT
+  const token = localStorage.getItem(TOKEN_KEY); 
   if (token) {
     config.headers = config.headers || {};
     config.headers['Authorization'] = `Bearer ${token}`;
@@ -22,18 +22,52 @@ apiClient.interceptors.request.use((config) => {
 });
 
 export const authService = {
-  login: async (credentials: LoginRequest): Promise<boolean> => {
+  login: async (credentials: LoginRequest): Promise<string | null> => {
     const response = await apiClient.post<string>('/api/auth/login', credentials);
+    const token = response.data;
     if (response.status !== 200) {
-      return false
+      return null
     }
-    localStorage.setItem(TOKEN_KEY, response.data);
-    return true
+    localStorage.setItem(TOKEN_KEY, token);
+    return token
+  },
+  getToken: (): string | null => {
+    return localStorage.getItem(TOKEN_KEY);
   },
   register: async (credentials: RegisterRequest): Promise<boolean> => {
     const response = await apiClient.post<StudyNote>('/api/auth/register', credentials);
     return response.status === 200;
   },
+  logout: () => {
+    localStorage.removeItem(TOKEN_KEY);
+  },
+  getProfile: async (): Promise<SecureUser | null> => {
+    const response = await apiClient.post('/api/auth/profile');
+    if (response.status !== 200) {
+      return null;
+    }
+    return response.data;
+  } 
+}
+
+export const fileService = {
+  upload: async (file: File): Promise<string | null> => {
+    console.log("Uploading file:", file);
+    const fileType = file.type
+    const {data: apiRes } = await apiClient.post<{url:string}>('/api/presigned', { fileName: file.name, contentType: fileType });
+    const presignedUrl = apiRes.url;
+    const result = await axios.put(presignedUrl, file, {
+      headers: {
+        "Content-Type": fileType
+      }
+    });
+
+    if (result.status !== 200) {
+      return null;
+    }
+    const uri = new URL(presignedUrl); // Debo sacar query params para obtener la URL pública
+    return `${uri.protocol}//${uri.host}${uri.pathname}`;
+  }
 }
 
 export const studyNoteService = {
