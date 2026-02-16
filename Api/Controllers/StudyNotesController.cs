@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using domain.Types;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Authorization;
-
+using System.ComponentModel.DataAnnotations;
 namespace Api.Controllers;
 
 [ApiController]
@@ -14,6 +14,19 @@ namespace Api.Controllers;
 public class StudyNotesController : ControllerBase
 {
     private readonly IService<StudyNote> _service;
+
+    public class CreateNoteDTO
+    {
+        [Required]
+        public required string Name { get; set; }
+
+        [Required]
+        public required string Description { get; set; }
+
+        [Required]
+        public required string PdfLink { get; set; }
+    }
+
     
     public StudyNotesController(IService<StudyNote> service)
     {
@@ -33,6 +46,22 @@ public class StudyNotesController : ControllerBase
         return Ok(result.Value);
     }
 
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<IActionResult> GetMyStudyNotes()
+    {
+        Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
+        if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
+
+        GetUserStudyNotes useCase = new GetUserStudyNotes(_service);
+        OperationResult<StudyNote[]> result = await useCase.Execute(userId);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.Error?.Message ?? "Error retrieving user notes" });
+        }
+        return Ok(result.Value);
+    }
+
     [HttpGet("{id}")]
     public async Task<IActionResult> GetOneStudyNote(Guid id)
     {
@@ -48,13 +77,18 @@ public class StudyNotesController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateStudyNote([FromBody] StudyNote studyNote)
+    public async Task<IActionResult> CreateStudyNote([FromBody] CreateNoteDTO studyNote)
     {
         Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
         if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
 
         CreateStudyNote useCase = new CreateStudyNote(_service);
-        OperationResult result = await useCase.Execute(studyNote, userId);
+        OperationResult result = await useCase.Execute(new () {
+            Name = studyNote.Name, 
+            Description = studyNote.Description, 
+            PdfLink = studyNote.PdfLink 
+        }, userId);
+        
         if (!result.IsSuccess) return BadRequest(new {message=result.Error!.Message});
         
         return Ok();

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using domain.Types;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api.Controllers;
 
@@ -84,5 +85,22 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    [HttpPost("profile")]
+    [Authorize]
+    public async Task<IActionResult> Profile()
+    {
+        Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
+        if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
+        GetProfileUseCase useCase = new GetProfileUseCase(_service);
+        OperationResult<SecureUser> result = await useCase.Execute(userId);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new {message=result.Error!.Message});
+        }
+
+        return Ok(result.Value!);
     }
 }
