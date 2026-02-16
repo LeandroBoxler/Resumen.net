@@ -2,10 +2,10 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { Input, Button, ErrorMessage } from '../components/common';
-import { authService } from '../services/api';
-
+import { useAuth } from '../context/AuthContext';
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const {register} = useAuth()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -35,9 +35,9 @@ export default function RegisterPage() {
 
     try {
       // Aquí integrarías con tu API de registro
-      // const response = await authService.register(formData);
+      // const response = await register(formData);
       
-      const registered = await authService.register(formData)
+      const registered = await register(formData)
       
       // Redirigir después del registro exitoso
       if (!registered) throw new Error('Login failed');

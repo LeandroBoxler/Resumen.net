@@ -2,10 +2,11 @@ import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { Input, Button, ErrorMessage } from '../components/common';
-import { authService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const {login} = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -21,7 +22,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const isLogged = await authService.login(formData)
+      const isLogged = await login(formData)
       
       if (!isLogged) throw new Error('Login failed');
       navigate(ROUTES.HOME);

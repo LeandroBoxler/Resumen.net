@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { StudyNote } from '../types';
 import { studyNoteService } from '../services/api';
 
-import { getNoteDetailPath } from '../routes';
+import { getNoteDetailPath, ROUTES } from '../routes';
 import { LoadingState, ErrorMessage, Button, EmptyState } from './common';
 
 export default function NotesList() {
@@ -12,6 +12,8 @@ export default function NotesList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  
 
   useEffect(() => {
     loadProducts();
@@ -102,7 +104,7 @@ export default function NotesList() {
                   variant="primary"
                   className="flex-1"
                 >
-                  Editar
+                  Ver Detalles
                 </Button>
                 <Button
                   onClick={() => handleDelete(product.id, product.name)}
@@ -118,6 +120,11 @@ export default function NotesList() {
           ))}
         </div>
       )}
+      <Link to={ROUTES.NEW_NOTE} className="fixed bottom-8 right-8">
+        <Button variant="primary" className="rounded-full p-4 shadow-lg hover:shadow-xl transition-shadow">
+          + Nuevo Resumen
+        </Button>
+      </Link>
     </div>
   );
 }
