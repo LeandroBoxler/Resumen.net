@@ -25,6 +25,11 @@ public class DeleteStudyNote
             return new OperationResult(new Exception("StudyNote not found"));
         }
 
+        if (existingNoteResult.Value!.UserId != userId)
+        {
+            return new OperationResult(new UnauthorizedAccessException("User does not have permission to delete this note."));
+        }
+
         return await _service.Delete(id);        
     }
     

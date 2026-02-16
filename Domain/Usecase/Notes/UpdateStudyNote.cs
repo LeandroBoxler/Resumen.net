@@ -24,6 +24,12 @@ public class UpdateStudyNote
         {
             return new OperationResult<StudyNote>(new Exception("StudyNote not found"));
         }
+
+        if (existingNoteResult.Value!.UserId != userId)
+        {
+            return new OperationResult<StudyNote>(new UnauthorizedAccessException("User does not have permission to update this note."));
+        }
+
         await _service.Update(updatedNote);
         return new OperationResult<StudyNote>(updatedNote); 
     }
