@@ -1,20 +1,18 @@
 import { RouteObject } from 'react-router-dom';
-import { HomePage, ProductsPage, EditNote, LoginPage, RegisterPage, NewNote } from '../pages';
+import {  ProductsPage, EditNote, LoginPage, RegisterPage, NewNote, ProfilePage } from '../pages';
 import { ROUTES } from './constants';
+import ProtectedRoute from '../context/ProtectedRoute';
 import NoteDetail from '../pages/NoteDetail';
+import EditProfilePage from '../pages/EditProfilePage';
 
 export const routes: RouteObject[] = [
-  {
-    path: ROUTES.HOME,
-    element: <HomePage />,
-  },
-  {
+   {
     path: ROUTES.NOTES,
-    element: <ProductsPage />,
+    element: <ProductsPage/>,
   },
   {
     path: ROUTES.NEW_NOTE,
-    element: <NewNote />,
+    element: <ProtectedRoute><NewNote /></ProtectedRoute>,
   },
   {
     path: ROUTES.NOTE_DETAIL,
@@ -22,14 +20,22 @@ export const routes: RouteObject[] = [
   },
   {
     path: ROUTES.EDIT_NOTE,
-    element: <EditNote />,
+    element: <ProtectedRoute><EditNote/></ProtectedRoute>,
   },
   {
     path: ROUTES.LOGIN,
-    element: <LoginPage />,
+    element: <ProtectedRoute login={false}><LoginPage /></ProtectedRoute>,
   },
   {
     path: ROUTES.REGISTER,
-    element: <RegisterPage />,
+    element: <ProtectedRoute login={false}><RegisterPage /></ProtectedRoute>,
   },
+  {
+    path: ROUTES.PROFILE,
+    element: <ProtectedRoute><ProfilePage/></ProtectedRoute>,
+  },
+  {
+    path : ROUTES.EDIT_PROFILE,
+    element: <ProtectedRoute><EditProfilePage/></ProtectedRoute>,
+  }
 ];

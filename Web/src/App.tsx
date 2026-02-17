@@ -6,7 +6,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route element={<MainLayout />}>
+        <Route  element={<MainLayout />}>
           {routes.map((route, index) => (
             <Route key={index} path={route.path} element={route.element} />
           ))}

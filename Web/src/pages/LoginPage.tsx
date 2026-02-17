@@ -25,7 +25,7 @@ export default function LoginPage() {
       const isLogged = await login(formData)
       
       if (!isLogged) throw new Error('Login failed');
-      navigate(ROUTES.HOME);
+      navigate(ROUTES.NOTES);
     } catch (err) {
       setError('Credenciales inválidas. Por favor, intenta nuevamente.');
       console.error('Login error:', err);

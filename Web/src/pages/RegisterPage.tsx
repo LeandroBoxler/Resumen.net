@@ -20,7 +20,6 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
-    // Validaciones
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -34,12 +33,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Aquí integrarías con tu API de registro
-      // const response = await register(formData);
-      
       const registered = await register(formData)
       
-      // Redirigir después del registro exitoso
       if (!registered) throw new Error('Login failed');
       navigate(ROUTES.LOGIN);
     } catch (err) {
@@ -78,6 +73,7 @@ export default function RegisterPage() {
             required
             autoComplete="firstName"
           />
+          
           <Input
             label="Apellido"
             type="text"

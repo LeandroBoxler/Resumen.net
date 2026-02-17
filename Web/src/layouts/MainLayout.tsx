@@ -11,14 +11,15 @@ export default function MainLayout() {
         <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-primary">Resumenes.com</h1>
           <div className="flex gap-6 items-center">
-            <Link to={ROUTES.HOME} className="text-gray-600 hover:text-primary transition-colors font-medium">
+            <Link to={ROUTES.NOTES} className="text-gray-600 hover:text-primary transition-colors font-medium">
               Inicio
             </Link>
-            <Link to={ROUTES.NOTES} className="border-red-500 text-gray-600 hover:text-primary transition-colors font-medium">
-              Resúmenes
-            </Link>
+            
             {profile ? 
             <>
+              <Link to={ROUTES.PROFILE} className="text-gray-600 hover:text-primary transition-colors font-medium">
+                Mi Perfil
+              </Link>
               <p className="text-gray-600 hover:text-gray-800 transition-colors">
                 Bienvenido, {profile.firstName}
               </p>
