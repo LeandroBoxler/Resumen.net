@@ -1,3 +1,4 @@
+using domain.Entities;
 using domain.Types;
 
 namespace domain.services;

@@ -60,7 +60,10 @@ public class PostgreUsersService : IService<User>
 
     public async Task<OperationResult<User>> GetById(Guid id)
     {
-        var item = await _ctx.Users.FindAsync(id);
+        var item = await _ctx.Users
+            .Include(u => u.CreatedNotes)
+            .Include(u => u.Favorites)
+            .FirstOrDefaultAsync(u => u.Id == id);
             if (item == null) return new OperationResult<User>(new Exception("Not found"));
             return new OperationResult<User>(item);
     }

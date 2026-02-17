@@ -42,11 +42,19 @@ public class AuthController : ControllerBase
 
     private readonly IService<User> _service;
     private readonly ICryptoService _cryptoService;
+    private readonly IService<UserFavorite> _favoriteService;
+    private readonly IService<StudyNote> _noteService;
     
-    public AuthController(IService<User> service, ICryptoService cryptoService)
+    public AuthController(
+        IService<User> service, 
+        ICryptoService cryptoService,
+        IService<UserFavorite> favoriteService,
+        IService<StudyNote> noteService)
     {
         _service = service;
-        _cryptoService= cryptoService;
+        _cryptoService = cryptoService;
+        _favoriteService = favoriteService;
+        _noteService = noteService;
     }
 
     [HttpPost("register")]
@@ -93,8 +101,9 @@ public class AuthController : ControllerBase
     {
         Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
         if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
-        GetProfileUseCase useCase = new GetProfileUseCase(_service);
+        GetProfileUseCase useCase = new GetProfileUseCase(_service, _favoriteService, _noteService);
         OperationResult<SecureUser> result = await useCase.Execute(userId);
+
 
         if (!result.IsSuccess)
         {
@@ -102,5 +111,46 @@ public class AuthController : ControllerBase
         }
 
         return Ok(result.Value!);
+    }
+
+    public class UpdateProfileDTO
+    {
+        [Required]
+        public required string FirstName { get; set; }
+
+        [Required]
+        public required string LastName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public required string Email { get; set; }
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDTO request)
+    {
+        Guid userId = new Guid(User.FindFirst("id")?.Value ?? "");
+        if (userId == Guid.Empty) return Unauthorized(new {message="User ID not found in token"});
+
+        UpdateProfileUseCase useCase = new UpdateProfileUseCase(_service);
+        OperationResult<User> result = await useCase.Execute(userId, new UpdateProfileUsecasePayload
+        {
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Email = request.Email
+        });
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new {message=result.Error!.Message});
+        }
+
+        return Ok(new {
+            id = result.Value!.Id,
+            email = result.Value!.Email,
+            firstName = result.Value!.FirstName,
+            lastName = result.Value!.LastName
+        });
     }
 }
