@@ -45,6 +45,7 @@ public class StudyNotesController : ControllerBase
         }
         return Ok(result.Value);
     }
+    
 
     [HttpGet("my")]
     [Authorize]
@@ -119,4 +120,5 @@ public class StudyNotesController : ControllerBase
         
         return Ok(result.Value);
     }
+    
 }

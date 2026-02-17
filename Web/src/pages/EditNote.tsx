@@ -63,13 +63,11 @@ export default function EditNote() {
             }
 
             studyNoteService.update(note.id, {
-              id: note.id,
               name: data.name,
               description: data.description,
               pdfLink: pdfUrl,
             })
 
-            console.log("Submitting new note:", data);
             
     }
 
