@@ -52,7 +52,6 @@ public class AppDbContext : DbContext
             eb.Property(e => e.UserId).IsRequired();
             eb.Property(e => e.NoteId).IsRequired();
 
-            // Relations
             eb.HasOne(e => e.User)
               .WithMany(u => u.Favorites)
               .HasForeignKey(e => e.UserId)
