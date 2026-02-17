@@ -1,11 +1,12 @@
 import { createContext, useContext,  useEffect,  useState } from "react";
-import { LoginRequest, RegisterRequest, SecureUser } from "../types";
+import { LoginRequest, RegisterRequest, SecureUser, UpdateProfileRequest } from "../types";
 import {authService} from "../services/api";
 
 export interface AuthContext {
     login: (credentials: LoginRequest) => Promise<string | null>;
     logout: () => void;
     register: (credentials: RegisterRequest) => Promise<boolean>
+    updateProfile: (data: UpdateProfileRequest) => Promise<boolean>;
     profile?: SecureUser | null;
 }
 
@@ -13,6 +14,7 @@ const authContext = createContext({
     login: async () => null,
     logout: () => void 0,
     register: async () => false,
+    updateProfile: async () => false,
 } as AuthContext)
 
 export const useAuth = () => useContext(authContext)
@@ -47,12 +49,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return await authService.register(credentials)
     }
 
+    async function updateProfile (data: UpdateProfileRequest): Promise<boolean> {
+        const updatedProfile = await authService.updateProfile(data)
+        if (updatedProfile) {
+            setProfile(updatedProfile)
+            return true
+        }
+        return false
+    }
+
     function logout () {
         authService.logout()
         setProfile(null)
     }
 
-    const value: AuthContext = {logout, profile, login, register}
+    const value: AuthContext = {logout, profile, login, register, updateProfile}
 
     return <authContext.Provider value={value}>
         {children}

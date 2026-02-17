@@ -1,9 +1,10 @@
 import axios from 'axios';
-import { LoginRequest, RegisterRequest, SecureUser, StudyNote } from '../types';
+import { LoginRequest, RegisterRequest, SecureUser, StudyNote, StudyNotePayload, UpdateProfileRequest } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const TOKEN_KEY = "token"
+
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -47,7 +48,14 @@ export const authService = {
       return null;
     }
     return response.data;
-  } 
+  },
+  updateProfile: async (data: UpdateProfileRequest): Promise<SecureUser | null> => {
+    const response = await apiClient.put('/api/auth/profile', data);
+    if (response.status !== 200) {
+      return null;
+    }
+    return response.data;
+  }
 }
 
 export const fileService = {
@@ -65,7 +73,7 @@ export const fileService = {
     if (result.status !== 200) {
       return null;
     }
-    const uri = new URL(presignedUrl); // Debo sacar query params para obtener la URL pública
+    const uri = new URL(presignedUrl); 
     return `${uri.protocol}//${uri.host}${uri.pathname}`;
   }
 }
@@ -81,12 +89,12 @@ export const studyNoteService = {
     return response.data;
   },
 
-  create: async (studyNote: Omit<StudyNote, 'id'>): Promise<StudyNote> => {
+  create: async (studyNote: StudyNotePayload): Promise<StudyNote> => {
     const response = await apiClient.post<StudyNote>('/api/notes', studyNote);
     return response.data;
   },
 
-  update: async (id: string, studyNote: StudyNote): Promise<StudyNote> => {
+  update: async (id: string, studyNote: StudyNotePayload): Promise<StudyNote> => {
     const response = await apiClient.put<StudyNote>(`/api/notes/${id}`, studyNote);
     return response.data;
   },
@@ -94,6 +102,23 @@ export const studyNoteService = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/api/notes/${id}`);
   },
+
+};
+
+export const favoritesService = {
+  getUserFavorites: async (): Promise<{ id: string; noteId: string }[]> => {
+    const response = await apiClient.get('/api/user/favorites');
+    return response.data;
+  },
+
+  addFavorite: async (noteId: string): Promise<void> => {
+    await apiClient.post(`/api/user/favorites/${noteId}`);
+  },
+
+  removeFavorite: async (noteId: string): Promise<void> => {
+    await apiClient.delete(`/api/user/favorites/${noteId}`);
+  },
 };
 
 export default apiClient;
+

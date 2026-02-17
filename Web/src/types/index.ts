@@ -3,7 +3,18 @@ export interface StudyNote {
   name: string;
   description: string;
   pdfLink: string;
-  userId: string
+  userId: string;
+}
+
+export type StudyNotePayload = Omit<StudyNote, 'id' | "userId">;
+
+
+
+export interface UserFavorite {
+  id: string;
+  userId: string;
+  noteId: string;
+  studyNote: StudyNote;
 }
 
 export interface LoginRequest {
@@ -18,11 +29,17 @@ export interface RegisterRequest {
   lastName: string;
 }
 
+export interface UpdateProfileRequest {
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 export interface SecureUser {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  favorites: unknown[]
-  createdNotes: StudyNote[]
+  favorites: UserFavorite[];
+  createdNotes: StudyNote[];
 }
