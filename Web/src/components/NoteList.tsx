@@ -5,6 +5,7 @@ import { studyNoteService } from '../services/api';
 
 import { getNoteDetailPath } from '../routes';
 import { LoadingState, ErrorMessage, Button, EmptyState } from './common';
+import PdfCoverPreview from './PdfCoverPreview';
 
 export default function NoteList() {
   const navigate = useNavigate();
@@ -91,28 +92,33 @@ export default function NoteList() {
           {products.map((product) => (
             <div
               key={product.id}
-              className="bg-white rounded-lg shadow-md p-6 flex flex-col justify-between hover:shadow-lg transition-shadow"
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
             >
-              <div>
+              {product.pdfLink && (
+                <div className="w-full h-64 bg-gray-100 flex items-center justify-center overflow-hidden">
+                  <PdfCoverPreview file={product.pdfLink} />
+                </div>
+              )}
+              <div className="p-6 flex flex-col flex-grow">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">{product.name}</h2>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <Button
-                  onClick={() => navigate(getNoteDetailPath(product.id))}
-                  variant="primary"
-                  className="flex-1"
-                >
-                  Editar
-                </Button>
-                <Button
-                  onClick={() => handleDelete(product.id, product.name)}
-                  variant="secondary"
-                  disabled={deletingId === product.id}
-                  loading={deletingId === product.id}
-                  className="flex-1"
-                >
-                  Eliminar
-                </Button>
+                <div className="flex gap-2 mt-auto">
+                  <Button
+                    onClick={() => navigate(getNoteDetailPath(product.id))}
+                    variant="primary"
+                    className="flex-1"
+                  >
+                    Detalle
+                  </Button>
+                  <Button
+                    onClick={() => handleDelete(product.id, product.name)}
+                    variant="secondary"
+                    disabled={deletingId === product.id}
+                    loading={deletingId === product.id}
+                    className="flex-1"
+                  >
+                    Eliminar
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
